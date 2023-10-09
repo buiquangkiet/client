@@ -158,7 +158,7 @@ const FilterCollection = ({ fromProduct }) => {
     return (
         <div className="min-w-full">
             <div
-                className={`text-black flex items-center rounded-full my-5 bg-[rgba(255,255,255,0.2)] pr-5 gap-3 mb-5 border ${width ===3 ? "w-[50%]" : "w-full"}`}>
+                className={`text-black flex items-center rounded-full my-5 bg-[rgba(255,255,255,0.2)] pr-5 gap-3 mb-5 border ${width === 3 ? "w-[50%]" : "w-full"}`}>
                 <input
                     type="text"
                     placeholder="Search Product by Title or Brand"
@@ -199,7 +199,7 @@ const FilterCollection = ({ fromProduct }) => {
                         product={product}
                         fatherPath={
                             fromProduct &&
-                            `/collections/${product.category._id}/products/${product._id}`
+                            `/collections/${product?.category?._id}/products/${product?._id}`
                         }
                     />
                 ))}
