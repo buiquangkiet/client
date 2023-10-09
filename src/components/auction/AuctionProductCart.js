@@ -58,8 +58,8 @@ const AuctionProductCart = ({ product }) => {
                             product.reservePrice * 0.000043
                         ).toFixed(2)}USD`}
                     >
-                        {product.auctionHistory.length > 0 ? product.auctionHistory[0].price.toLocaleString("vi-VN") + " VND" :
-                            product.reservePrice.toLocaleString("vi-VN") + " VND"
+                        {product?.auctionHistory?.length > 0 ? product?.auctionHistory[0].price?.toLocaleString("vi-VN") + " VND" :
+                            product?.reservePrice?.toLocaleString("vi-VN") + " VND"
                         }
                     </p>
                 </div>
@@ -92,7 +92,7 @@ const AuctionProductCart = ({ product }) => {
                     product.reservePrice * 0.000043
                 ).toFixed(2)}USD`}
             >
-                {product?.maxPrice.toLocaleString("vi-VN") + " VND"
+                {product?.maxPrice?.toLocaleString("vi-VN") + " VND"
                 }
             </p>
         </div>

@@ -12,7 +12,6 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2';
-import { variants } from 'ultils/constaint'
 import { getBase64 } from 'ultils/helpers';
 
 const EditAuctionProduct = () => {
@@ -77,7 +76,7 @@ const EditAuctionProduct = () => {
             const formData = new FormData();
             // product.image.append()
             Object.keys(product).forEach(key => {
-                key !== 'image' && key !== 'variants' && key !== 'expire' && formData.append(key, product[key])
+                key !== 'image' && key !== 'expire' && formData.append(key, product[key])
             })
             for (let image of product.image) formData.append('image', image)
 
@@ -101,7 +100,6 @@ const EditAuctionProduct = () => {
                             reservePrice: 0,
                             stepPrice: 0,
                             expire: 0,
-                            variants: {},
                             category: '',
                             brand: '',
                             description: '',

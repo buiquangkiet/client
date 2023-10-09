@@ -1,5 +1,4 @@
-import { apiGetAuctionProducts } from "apis/auctionProduct";
-import { apiDeleteProduct, apiGetProducts } from "apis/product";
+import { apiDeleteAuctionProduct, apiGetAuctionProducts } from "apis/auctionProduct";
 import { setLoading } from "app/appSlice";
 import Pagination from "components/Pagination/Pagination";
 import moment from "moment/moment";
@@ -50,7 +49,7 @@ const ManageAuctionProducts = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         dispatch(setLoading(true));
-        const response = await apiDeleteProduct(_id);
+        const response = await apiDeleteAuctionProduct(_id);
         dispatch(setLoading(false));
 
         if (response.success) {

@@ -40,7 +40,7 @@ export const apiBidProduct = (data) => {
 
 export const apiDeleteAuctionProduct = (data) => {
     return axios({
-        url: `product/${data}`,
+        url: `auction/${data}`,
         method: "delete",
         // data,
     });

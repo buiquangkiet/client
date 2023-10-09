@@ -10,8 +10,6 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import Swal from 'sweetalert2'
 import { getBase64 } from 'ultils/helpers'
-import { variants } from 'ultils/constaint'
-import { useRef } from 'react'
 import { apiCreateAuctionProduct } from 'apis/auctionProduct'
 const CreateAuctionProduct = () => {
   const dispatch = useDispatch()
@@ -20,14 +18,12 @@ const CreateAuctionProduct = () => {
     reservePrice: 0,
     stepPrice: 0,
     expire: new Date(),
-    variants: {},
     category: '',
     brand: '',
     description: '',
     thumb: FileList,
     image: FileList,
   })
-  const [selected, setSelected] = useState({});
   const [category, setCategory] = useState();
   const [previewImage, setPreviewImage] = useState({
     thumb: '',
@@ -45,25 +41,7 @@ const CreateAuctionProduct = () => {
   const handleAttribute = useCallback((field, value) => {
     setProduct({ ...product, [field]: value })
   }, [product])
-  useEffect(() => {
-    function removeEmptyArrayFields(obj) {
-      const result = {};
-      obj &&
-        Object.keys(obj).forEach((key) => {
-          if (Array.isArray(obj[key]) && obj[key].length > 0) {
-            result[key] = obj[key];
-          }
-        });
-      return result;
-    }
-    const filteredData = removeEmptyArrayFields(selected);
-    const formattedData = {};
 
-    Object.keys(filteredData).forEach(
-      (key) => (formattedData[`variants.${key}`] = filteredData[key])
-    );
-    setProduct({ ...product, variants: filteredData })
-  }, [selected])
 
   const handleSubmit = async () => {
     if (!product.title || !product.reservePrice || !product.stepPrice
@@ -78,19 +56,10 @@ const CreateAuctionProduct = () => {
       const formData = new FormData();
       // product.image.append()
       Object.keys(product).forEach(key => {
-        key !== 'image' && key !== 'variants' && key !== 'expire' && formData.append(key, product[key])
+        key !== 'image' && key !== 'expire' && formData.append(key, product[key])
       })
       for (let image of product.image) formData.append('image', image)
 
-      Object.keys(product.variants).forEach(variant => {
-        const variantValue = product.variants[variant];
-        if (variantValue.length === 1) {
-          formData.append(`variants.${variant}`, variantValue);
-        } else {
-          for (let key of product.variants[variant])
-            formData.append(`variants.${variant}`, key)
-        }
-      });
       // if (product.expire)
       const timeRemaining = Math.round((new Date(product.expire) - Date.now()) / 1000)
       if (timeRemaining < 0) {
@@ -110,7 +79,6 @@ const CreateAuctionProduct = () => {
             reservePrice: 0,
             stepPrice: 0,
             expire: 0,
-            variants: {},
             category: '',
             brand: '',
             description: '',
@@ -142,8 +110,7 @@ const CreateAuctionProduct = () => {
           <Input label="Brand" handleAttribute={handleAttribute} field="brand" value={category?.filter(item => item.title === product.category)?.map(item2 => item2.brand)[0]} select required={true} />
           <Input label="Expire" handleAttribute={handleAttribute} field="expire" value={product.expire} date required={true} />
         </div>
-        <Filter variants={variants} selected={selected}
-          setSelected={setSelected} isCreate={true} />
+
         <MarkdownEditor field="description" value={product.description} onSubmit={handleAttribute} label="Description" />
         <div className='flex flex-col gap-4 my-5'>
           <div className='flex flex-col gap-2'>
