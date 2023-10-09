@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { offModel } from "../app/ProductModel";
+import { offModel } from "../../app/ProductModel";
 
 const Model = ({ children }) => {
     const dispatch = useDispatch();

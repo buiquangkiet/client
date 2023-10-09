@@ -80,10 +80,12 @@ const RatingModel = ({ product }) => {
                 />
                 <span>How do you like this product ?</span>
                 <div className={`grid grid-cols-5 ${width < 2 ? "gap-1" : " gap-5"}`}>
-                    {star.map((item) => (
+                    {star.map((item, index) => (
                         <div
+                            key={index}
                             onClick={() => setStarVote(item.star)}
-                            className="flex flex-col items-center justify-center cursor-pointer bg-slate-300  rounded-sm h-[120px] gap-5 p-5"
+                            className={`flex flex-col items-center justify-center cursor-pointer bg-slate-300  rounded-sm   p-5 
+                            ${width === 1 ? "h-[90px] gap-2" : "h-[120px] gap-5"}`}
                         >
                             {item.star <= starVote ? (
                                 <StarFillIcon

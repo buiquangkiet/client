@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
 import { Autoplay } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { NextIcon, PrevIcon } from "../ultils/icons";
-import Product from "./product/Product";
+import { NextIcon, PrevIcon } from "../../ultils/icons";
+import Product from "../product/Product";
 import { useSelector } from "react-redux";
 
 const Slider = ({ products }) => {

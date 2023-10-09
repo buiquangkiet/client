@@ -3,33 +3,28 @@ import Reviews from "./Reviews";
 import { useSelector } from "react-redux";
 
 const ProductInfo = ({ product, info }) => {
-    const {width} = useSelector(state => state.app)
+    const { width } = useSelector(state => state.app)
     const infoArray = [];
     const [active, setActive] = useState(0);
     let index = 0;
     for (let item in info) {
-        infoArray.push({ title: item, value: info[item], index: index });
+        infoArray.push({ title: item, value: info && info[item], index: index });
         index++;
     }
-    infoArray.push({
-        title: "CUSTOMER REVIEW",
-        value: <Reviews product={product} />,
-        index: index,
-    });
+
     return (
         <div className="flex flex-col ">
-            <div className={`flex  ${width <3 ? "flex-col" : "items-center gap-2 "}`}>
+            <div className={`flex  ${width < 3 ? "flex-col" : "items-center gap-2 "}`}>
                 {infoArray.map((item) => (
                     <div
                         key={item.index}
                         onClick={() => {
                             setActive(item.index);
                         }}
-                        className={`px-3 py-1 border cursor-pointer hover:bg-gray-100 border-b-white ${
-                            active === item.index
-                                ? "bg-white text-black"
-                                : "bg-gray-200"
-                        }`}
+                        className={`px-3 py-1 border cursor-pointer hover:bg-gray-100 border-b-white ${active === item.index
+                            ? "bg-white text-black"
+                            : "bg-gray-200"
+                            }`}
                     >
                         {item.title}
                     </div>
@@ -42,10 +37,9 @@ const ProductInfo = ({ product, info }) => {
                             .split("\n")
                             .map((item2, index2) => (
                                 <span
-                                    className={`  ${
-                                        index2 === 1 &&
+                                    className={`  ${index2 === 1 &&
                                         "font-semibold text-[20px]"
-                                    }`}
+                                        }`}
                                     key={index2}
                                 >
                                     {item2}
@@ -53,7 +47,7 @@ const ProductInfo = ({ product, info }) => {
                             ))}
                     </div>
                 ) : (
-                    infoArray[active].value
+                    infoArray[active]?.value
                 )}
             </div>
         </div>

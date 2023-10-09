@@ -16,7 +16,7 @@ const Cart = () => {
     const { isLoggedIn } = JSON.parse(
         window.localStorage.getItem("persist:user")
     );
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     // useEffect(() => {
     //     if (
     //         isLoggedIn === "false" ||
@@ -96,6 +96,21 @@ const Cart = () => {
             }
         });
     };
+    const handleCheckout = () => {
+        const checkoutProducts = cart.map(item => ({
+            pid: item.product._id,
+            title: item.product.title,
+            quantity: +item.quantity,
+            variants: item.variants,
+            thumbnail: item.product.thumbnail,
+            price: item.product.price
+        }))
+        navigate("/checkout", {
+            state: {
+                products: checkoutProducts
+            }
+        })
+    }
     return (
         <div className="w-main mt-5  mb-[100px] flex flex-col  gap-5">
             {currentUser ? (
@@ -155,7 +170,7 @@ const Cart = () => {
                                     >
                                         Update Cart
                                     </button>
-                                    <button className="px-3 py-2 bg-main text-white hover:bg-black duration-300">
+                                    <button className="px-3 py-2 bg-main text-white hover:bg-black duration-300" onClick={handleCheckout}>
                                         Check Out
                                     </button>
                                 </div>

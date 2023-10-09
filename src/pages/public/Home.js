@@ -6,7 +6,9 @@ import adv2 from "assets/adv2.png";
 import FeatureProduct from "components/home/FeatureProduct";
 import NewArrival from "components/home/NewArrival";
 import HotCollection from "components/home/HotCollection";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import AuctionProduct from "components/home/Auction";
+
 const Home = () => {
     const [best, setBest] = useState();
     const [newArrival, setNewArrival] = useState();
@@ -45,11 +47,7 @@ const Home = () => {
     return (
         <div className="w-full mt-5 mb-[100px] flex flex-col  gap-5">
             <div className="flex gap-5 ">
-                {width === 3 &&
-                    <div className="flex flex-col w-[25%] gap-5 flex-auto">
-                        <Sidebar />
-                        <DealDaily />
-                    </div>}
+
                 <div className="flex flex-col w-[75%] flex-auto gap-5">
                     <Banner />
                     {width < 3 &&
@@ -73,7 +71,14 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
+                {width === 3 &&
+                    <div className="flex flex-col w-[25%] gap-5 flex-auto">
+                        <Sidebar />
+                        <DealDaily />
+                    </div>}
             </div>
+            <AuctionProduct />
+
             <FeatureProduct />
             <NewArrival
                 newPhones={newPhones}

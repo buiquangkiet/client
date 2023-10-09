@@ -1,5 +1,6 @@
 import { apiGetCurrent } from "apis/user";
 import { Header, Navigation } from "components";
+import Footer from "components/common/Footer";
 import PrivateSidebar from "components/Private/PrivateSidebar";
 import React from "react";
 import { useEffect } from "react";
@@ -14,12 +15,16 @@ const MemberLayout = () => {
 
     const navItems = [
         {
-            name: "My Profile",
+            name: "Profile",
             path: path.PERSONAL,
         },
         {
-            name: "My Purchases",
+            name: "Purchases",
             path: path.MY_PURCHASES,
+        },
+        {
+            name: "Auctions",
+            path: path.MY_AUCTION,
         },
 
     ];
@@ -38,15 +43,27 @@ const MemberLayout = () => {
         fetchUser();
     }, []);
     return (
-        <div className="w-full flex flex-col">
-            <Header />
-            <div className={`flex flex-col`} >
+        <div className="w-full flex flex-col items-center">
+            {/* <div className="w-full max-w-main flex flex-col items-center ">
+                <Header />
+                <div className={`flex flex-col`} >
+                    <Navigation navItems={navItems} />
+                    <div className="w-full flex-auto" >
+                        <Outlet />
+                    </div>
+                </div>
+            </div> */}
+            <div className="w-full max-w-main flex flex-col items-center ">
+                <Header />
                 <Navigation navItems={navItems} />
-                <div className="w-full flex-auto" >
+                <div className={` w-full  max-w-main flex justify-center ${width !== 1 ? " px-5" : "p-1"}`}>
                     <Outlet />
                 </div>
             </div>
+            <Footer />
         </div>
+
+
     );
 };
 

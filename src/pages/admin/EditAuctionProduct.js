@@ -1,4 +1,5 @@
 import { apiGetCategory } from 'apis/app';
+import { apiGetDetailAuctionProduct, apiUpdateAuctionProduct } from 'apis/auctionProduct';
 import { apiGetDetailProduct, apiUpdateProduct } from 'apis/product';
 import { setLoading } from 'app/appSlice';
 import Input from 'components/admin/Input';
@@ -14,7 +15,7 @@ import Swal from 'sweetalert2';
 import { variants } from 'ultils/constaint'
 import { getBase64 } from 'ultils/helpers';
 
-const EditProduct = () => {
+const EditAuctionProduct = () => {
     const navigate = useNavigate()
     const location = useLocation();
     const dispatch = useDispatch();
@@ -22,17 +23,16 @@ const EditProduct = () => {
     const [product, setProduct] = useState({})
     const [category, setCategory] = useState();
     const [brand, setBrand] = useState();
-    const [selected, setSelected] = useState({});
     const [previewImage, setPreviewImage] = useState({
         thumb: '',
         image: []
     });
+
     useEffect(() => {
         const fetchProduct = async () => {
-            const response = await apiGetDetailProduct(pid);
+            const response = await apiGetDetailAuctionProduct(pid);
             if (response.success) {
                 setProduct(response.product);
-                setSelected(response.product.variants);
                 setPreviewImage({
                     thumb: response.product.thumbnail,
                     image: response.product.image
@@ -41,13 +41,20 @@ const EditProduct = () => {
         }
         const fetchCate = async () => {
             const res = await apiGetCategory();
-            if (res.success) setCategory(res.response.filter(
-                (item) => item.title !== "Camera" && item.title !== "Speaker"
-            ))
+            if (res.success) {
+                setCategory(res.response.filter(
+                    (item) => item.title !== "Camera" && item.title !== "Speaker"
+                ))
+            }
         }
         fetchCate()
         fetchProduct();
-    }, [location, pid])
+    }, [location, pid]);
+
+    const handleAttribute = useCallback((field, value) => {
+        setProduct({ ...product, [field]: value })
+    }, [product])
+
     useEffect(() => {
         let brandTemp;
         if (product?.category?.title) {
@@ -57,92 +64,73 @@ const EditProduct = () => {
         setBrand(brandTemp?.brand)
 
     }, [category, product.category])
-    const handleAttribute = useCallback((field, value) => {
-        setProduct({ ...product, [field]: value })
-    }, [product])
 
-    useEffect(() => {
-        function removeEmptyArrayFields(obj) {
-            const result = {};
-            obj &&
-                Object.keys(obj).forEach((key) => {
-                    if (Array.isArray(obj[key]) && obj[key].length > 0) {
-                        result[key] = obj[key];
-                    }
-                });
-            return result;
-        }
-        const filteredData = removeEmptyArrayFields(selected);
-        const formattedData = {};
-
-        Object.keys(filteredData).forEach(
-            (key) => (formattedData[`variants.${key}`] = filteredData[key])
-        );
-        setProduct({ ...product, variants: filteredData })
-    }, [selected])
     const handleSubmit = async () => {
-        product.category = product.category.title;
-        if (!product.title || !product.price || !product.quantity
-            || !product.category || !product.brand)
+        if (!product.title || !product.reservePrice || !product.stepPrice
+            || !product.category || !product.brand || product.image.length === 0 || product.thumbnail.length === 0)
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
                 text: 'Please fill all fields',
             })
         else {
-            const updateAttributes = {
-                title: "",
-                price: 0,
-                quantity: 0,
-                variants: {},
-                category: '',
-                brand: '',
-                description: '',
-                thumb: FileList,
-                image: FileList,
-            }
-            Object.keys(updateAttributes).forEach(key => {
-                updateAttributes[key] = product[key]
-            })
             const formData = new FormData();
-            Object.keys(updateAttributes).forEach(key => {
-                key !== 'image' && key !== 'variants' && formData.append(key, updateAttributes[key])
+            // product.image.append()
+            Object.keys(product).forEach(key => {
+                key !== 'image' && key !== 'variants' && key !== 'expire' && formData.append(key, product[key])
             })
-            if (updateAttributes.image && updateAttributes.image.length > 0) {
-                for (let image of updateAttributes.image) formData.append('image', image)
-            }
-            updateAttributes.variants && Object.keys(updateAttributes.variants).forEach(variant => {
-                const variantValue = updateAttributes?.variants[variant];
-                if (variantValue.length === 1) {
-                    formData.append(`variants.${variant}`, variantValue);
-                } else {
-                    for (let key of updateAttributes.variants[variant])
-                        formData.append(`variants.${variant}`, key)
-                }
-            });
-            dispatch(setLoading(true))
-            const res = await apiUpdateProduct(pid, formData);
-            if (res.success) {
-                Swal.fire("Success", "Updated Product", "success").then(() => {
-                    navigate(-1);
+            for (let image of product.image) formData.append('image', image)
+
+            // if (product.expire)
+            const timeRemaining = Math.round((new Date(product.expire) - Date.now()) / 1000)
+            if (timeRemaining < 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Expire is invalid',
                 })
             }
             else {
-                Swal.fire("Error", "Something went wrong", "error")
+                formData.append("expire", timeRemaining);
+                dispatch(setLoading(true));
+                const res = await apiUpdateAuctionProduct(pid, formData);
+                if (res.success) {
+                    Swal.fire("Success", "Updated Product", "success").then(() =>
+                        setProduct({
+                            title: "",
+                            reservePrice: 0,
+                            stepPrice: 0,
+                            expire: 0,
+                            variants: {},
+                            category: '',
+                            brand: '',
+                            description: '',
+                            thumb: FileList,
+                            image: FileList,
+                        }))
+                    setPreviewImage({
+                        thumb: '',
+                        image: []
+                    })
+                }
+                else {
+                    Swal.fire("Error", "Something went wrong", "error")
+                }
+                dispatch(setLoading(false))
             }
-            dispatch(setLoading(false))
         }
     }
     return (
         <div className="container mx-auto p-4 text-left ">
             <div className="font-semibold text-[20px] my-5 mb-8">
-                Create Product
+                Edit Auction
             </div>
             <div className="flex flex-col">
                 <Input label="Product Name" handleAttribute={handleAttribute} field="title" value={product.title} required={true} />
                 <div className="grid grid-cols-4 gap-5">
-                    <Input label="Price" handleAttribute={handleAttribute} field="price" value={+product.price} number={true} required={true} />
-                    <Input label="Quantity" handleAttribute={handleAttribute} field="quantity" value={+product.quantity} number={true} required={true} />
+                    <Input label="Reserve Price" handleAttribute={handleAttribute} field="reservePrice" value={+product.reservePrice} number={true} required={true} />
+                    <Input label="Step price" handleAttribute={handleAttribute} field="stepPrice" value={+product.stepPrice} number={true} required={true} />
+                    <Input label="Expire" handleAttribute={handleAttribute} field="expire" value={product?.expire} date required={true} />
                     <Input
                         label="Category"
                         handleAttribute={handleAttribute}
@@ -160,8 +148,7 @@ const EditProduct = () => {
                     />
 
                 </div>
-                <Filter variants={variants} selected={selected}
-                    setSelected={setSelected} isCreate={true} />
+
                 <MarkdownEditor
                     field="description"
                     value={Array.isArray(product.description) ? product.description.join('\n') : product.description}
@@ -222,4 +209,4 @@ const EditProduct = () => {
     )
 }
 
-export default EditProduct
+export default EditAuctionProduct

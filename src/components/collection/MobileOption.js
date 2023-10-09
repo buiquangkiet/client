@@ -57,7 +57,7 @@ const MobileOption = ({ title, options, onSelect, selected, isCreate }) => {
                 <NextIcon size={15} />
             </div>
             {expanded && (
-                <div className={`flex flex-col gap-3 shadow-md absolute z-10 px-3 py-3 bg-white top-[calc(100%+1px)] border left-0  max-h-[300px] overflow-auto ${isCreate ? "w-[calc(100%+50px)]" : "w-full"}`}>
+                <div className={`flex flex-col gap-3 shadow-md absolute z-10 px-3 py-3 bg-white top-[calc(100%+1px)] border left-0  max-h-[300px] overflow-auto w-full`}>
                     {options.map((option) => (
                         <label
                             className="flex items-center gap-2 "

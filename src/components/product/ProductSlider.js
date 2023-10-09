@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import "swiper/swiper-bundle.min.css";
 import "swiper/swiper.min.css";
-import Slider from "../Slider";
+import Slider from "../common/Slider";
 const ProductSlider = ({ bestSellers, newArrivals }) => {
     const title = ["BEST SELLER", "NEW ARRIVALS"];
     const [active, setActive] = useState(title[0]);

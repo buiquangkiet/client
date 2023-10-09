@@ -25,12 +25,42 @@ export const navItems = [
         path: path.PRODUCTS,
     },
     {
+        name: "Auction Product",
+        path: path.AUCTION_PRODUCTS,
+    },
+    {
+        name: "Search Your Orders",
+        path: path.SEARCH_ORDER,
+    },
+    {
         name: "Out Services",
         path: path.OUT_SERVICES,
     },
     {
-        name: "Blogs",
-        path: path.BLOGS,
+        name: "FAQ",
+        path: path.FAQ,
+    },
+];
+export const navItemsMobile = [
+    {
+        name: "Home",
+        path: path.HOME,
+    },
+    {
+        name: "Products",
+        path: path.PRODUCTS,
+    },
+    {
+        name: "Auction",
+        path: path.AUCTION_PRODUCTS,
+    },
+    {
+        name: "SearchOrders",
+        path: path.SEARCH_ORDER,
+    },
+    {
+        name: "Services",
+        path: path.OUT_SERVICES,
     },
     {
         name: "FAQ",

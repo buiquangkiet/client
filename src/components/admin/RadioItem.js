@@ -5,15 +5,15 @@ import { CheckIcon, RadioButtonIcon } from "ultils/icons";
 const TableItem = ({ content, onUpdate, field, id, value }) => {
     const [showInput, setShowInput] = useState(false);
     const [inputValue, setInputValue] = useState(content);
-    
+
     return (
         <div className="py-2 text-[12px]">
             {showInput ? (
                 <div className="flex flex-col gap-2 ">
                     <div>
                         {value.map((item, index) =>
-                            <div className="flex items-center cursor-pointer gap-1">
-                                <input className="cursor-pointer" type="radio" id={item} name={field} value={item} key={index} defaultChecked={content === item}
+                            <div className="flex items-center cursor-pointer gap-1" key={index} >
+                                <input className="cursor-pointer" type="radio" id={item} name={field} value={item} defaultChecked={content === item}
                                     onChange={() => setInputValue(item)}
                                 />
                                 <label className="cursor-pointer" for={item}>{item}</label>

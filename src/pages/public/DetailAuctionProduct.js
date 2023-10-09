@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiGetDetailProduct, apiGetProducts } from "apis/product";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { NextIcon, PrevIcon } from "ultils/icons";
+import { AuctionIcon, NextIcon, PrevIcon } from "ultils/icons";
 import ReactImageMagnify from "react-image-magnify";
 import { getStars } from "ultils/helpers";
 import { extraInfo } from "ultils/constaint";
@@ -17,23 +17,74 @@ import { setModel } from "app/ProductModel";
 import * as DOMPurify from 'dompurify';
 import RightCart from "components/common/RightCart";
 import { setLoading } from "app/appSlice";
-import Reviews from "components/product/Reviews";
-const DetailProduct = () => {
+import { memo } from "react";
+import { apiBidProduct, apiGetDetailAuctionProduct } from "apis/auctionProduct";
+import BidderListModel from "components/auction/BidderListModel";
+const DetailAuctionProduct = () => {
     const { pid } = useParams();
     const navigate = useNavigate();
     const swiperRef = useRef();
     const [activeThumbnail, setActiveThumbnail] = useState();
     const [relatedProducts, setRelatedProducts] = useState();
-    const [quantity, setQuantity] = useState(1);
     const [initVariant, setInitVariant] = useState();
     const [activeVariant, setActiveVariant] = useState();
     const detailProduct = useSelector((state) => state.product.detailProduct);
     const dispatch = useDispatch();
     const currentUser = JSON.parse(window.localStorage.getItem("persist:user"));
+    const user = useSelector(state => state.user.currentUser);
     const { width } = useSelector(state => state.app)
+    const [remainingTime, setRemainingTime] = useState();
+    const [bidPrice, setBidPrice] = useState();
+    // Function to calculate the remaining time in seconds
+    const formatDate = (time) => {
+        const date = new Date(time);
+        // Format the date in the desired format
+        const formattedDate = date.toLocaleDateString("en-US", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+        return formattedDate
+    }
+    function calculateRemainingTime() {
+        const givenDate = new Date(detailProduct?.expire);
+        const currentDate = new Date();
+        const timeDifference = givenDate - currentDate;
+        return Math.max(Math.floor(timeDifference / 1000), 0);
+    }
+    useEffect(() => {
+        setRemainingTime(calculateRemainingTime())
+    }, [detailProduct?.expire])
+    // Update the remaining time in the state every second
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setRemainingTime(prevRemainingTime => Math.max(prevRemainingTime - 1, 0));
+        }, 1000);
+
+        // Clear the interval when the component unmounts
+        return () => clearInterval(timer);
+    }, []);
+    // Function to format the remaining time
+    function formatRemainingTime() {
+        if (remainingTime === 0) return `This auction has ended.`
+        const formattedDays = Math.floor(remainingTime / 86400);
+        const formattedHours = Math.floor((remainingTime % 86400) / 3600);
+        const formattedMinutes = Math.floor((remainingTime % 3600) / 60);
+        const formattedSeconds = remainingTime % 60;
+
+        return {
+            day: (formattedDays >= 10 && formattedDays !== 0) ? formattedDays : `0${formattedDays}`,
+            hour: (formattedHours >= 10 && formattedHours !== 0) ? formattedHours : `0${formattedHours}`,
+            minute: (formattedMinutes >= 10 && formattedMinutes !== 0) ? formattedMinutes : `0${formattedMinutes}`,
+            second: (formattedSeconds >= 10 && formattedSeconds !== 0) ? formattedSeconds : `0${formattedSeconds}`,
+        };
+    }
     const fetchProduct = async () => {
         dispatch(setLoading(true));
-        const response = await apiGetDetailProduct(pid);
+        const response = await apiGetDetailAuctionProduct(pid);
         if (response.success) {
             dispatch(setDetail(response.product));
         }
@@ -51,7 +102,6 @@ const DetailProduct = () => {
     };
     useEffect(() => {
         fetchProduct();
-        setQuantity(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pid]);
     useEffect(() => {
@@ -70,11 +120,13 @@ const DetailProduct = () => {
         const obj = { ...activeVariant, [label]: variant };
         setActiveVariant(obj);
     };
-    const handleAddToCart = async () => {
+    const handleBidProduct = async () => {
+        // console.log(currentUser);
+        // apiBidProduct
         if (currentUser.isLoggedIn === "false") {
             Swal.fire({
                 title: "Opps",
-                text: "You need to login to add to cart !",
+                text: "Login to use this feature !",
                 confirmButtonText: "Login",
                 showCancelButton: true,
                 cancelButtonText: "Cancel",
@@ -82,57 +134,53 @@ const DetailProduct = () => {
                 if (rs.isConfirmed) navigate("/login");
             });
         } else {
-            const response = await apiAddToCart({
-                pid: detailProduct._id,
-                quantity: +quantity,
-                variants: activeVariant,
-            });
-
-            if (response.success) {
-                dispatch(updateCurrentUser(response.updateCart));
-                Swal.fire(
-                    response.success ? "Add To Cart Success" : "Add To Cart Failed",
-                    response.message,
-                    response.success ? "success" : "error"
-                ).then(() => {
-                    dispatch(setModel({ product: <RightCart /> }));
-                });
+            const minPrice = detailProduct.maxPrice + detailProduct.stepPrice;
+            if (bidPrice >= minPrice) {
+                dispatch(setLoading(true))
+                const res = await apiBidProduct({ pid: detailProduct._id, price: bidPrice });
+                dispatch(setLoading(false))
+                if (res.success) {
+                    Swal.fire({
+                        title: "Success",
+                        text: "You have successfully bid on this product !",
+                    }).then(() => {
+                        dispatch(setDetail(res.product))
+                        dispatch(updateCurrentUser(res.user));
+                        setBidPrice("");
+                    })
+                }
+                else {
+                    if (res.message === "Invalid Price") {
+                        Swal.fire({
+                            title: "Opps",
+                            text: "Someone has already bid this product on higher price !",
+                            confirmButtonText: "Reload This Page",
+                        }).then(rs => rs.isConfirmed && window.location.reload())
+                    }
+                    else {
+                        Swal.fire({
+                            title: "Opps",
+                            text: res.message
+                        })
+                    }
+                }
             }
             else {
                 Swal.fire({
-                    icon: 'error',
                     title: "Opps",
-                    text: "Some Products Maybe Inavailable",
-                    confirmButtonText: "Go To Cart",
-                    showCancelButton: true,
-                    cancelButtonText: "Cancel",
-                }).then((rs) => {
-                    if (rs.isConfirmed) navigate("/cart");
-                });
+                    text: `Minimum bidding amount allowed ${detailProduct.auctionHistory.length > 0 ? detailProduct.auctionHistory[0].price + detailProduct.stepPrice : detailProduct.reservePrice + detailProduct.stepPrice} VND`
+                })
             }
         }
-    };
-    const handleCheckout = () => {
-        navigate("/checkout", {
-            state: {
-                products: [{
-                    pid: detailProduct._id,
-                    title: detailProduct.title,
-                    quantity: +quantity,
-                    variants: activeVariant,
-                    thumbnail: detailProduct.thumbnail,
-                    price: detailProduct.price
-                }]
-            }
-        })
     }
+    // console.log(detailProduct);
     return (
         <div className="w-full">
             {detailProduct ? (
                 <div className="flex flex-col gap-5">
                     <div className={` py-5 w-full gap-8 ${width === 3 ? "grid grid-cols-5 " : "flex flex-col gap-5"}`}>
                         <div className="col-span-2 flex flex-col ">
-                            <div className=" p-2 border h-full flex justify-center">
+                            <div className=" p-2 border h-fit flex justify-center">
                                 <div className="h-full flex items-center justify-center">
                                     {width === 3 ? <ReactImageMagnify
                                         {...{
@@ -204,35 +252,6 @@ const DetailProduct = () => {
                         </div>
                         <div className="col-span-2 flex flex-col gap-4 px-5">
                             <p className="text-[30px] cursor-pointer font-semibold text-main">{detailProduct?.title}</p>
-                            <p
-                                className="text-[30px] font-medium cursor-pointer"
-                                title={`$${(
-                                    detailProduct?.price * 0.000043
-                                ).toFixed(2)}USD`}
-                            >
-                                {detailProduct?.price?.toLocaleString("vi-VN") +
-                                    " VND"}
-                            </p>
-
-                            <div className="flex">
-                                {getStars(detailProduct?.totalRating, 20).map(
-                                    (item, index) => (
-                                        <div
-                                            key={index}
-                                            className="text-yellow-500"
-                                        >
-                                            {item}
-                                        </div>
-                                    )
-                                )}
-                                <span>{detailProduct?.totalRating}</span>
-                            </div>
-                            <div className="flex items-center text-[14px] gap-2">
-                                <span className="pr-2 border-r-[1px]">
-                                    Quantity : {detailProduct?.quantity}
-                                </span>
-                                <span>Sold : {detailProduct?.sold}</span>
-                            </div>
                             <ul className="list-disc ">
                                 {detailProduct.description.length > 1 ? detailProduct?.description?.map((item, index) => (
                                     <li className="text-[15px] px-5" key={index}>
@@ -279,56 +298,85 @@ const DetailProduct = () => {
                                         )
                                     )}
                             </div>
-                            <div className="flex gap-3 my-4 ">
-                                <span className="w-[20%] font-medium flex-none">
-                                    Quantity
-                                </span>
-                                <div className="flex border justify-center bg-gray-200 ">
-                                    <button
-                                        onClick={() =>
-                                            quantity > 1 &&
-                                            setQuantity(quantity - 1)
-                                        }
-                                        className="px-2 py-1 text-center cursor-pointer hover:bg-gray-700 hover:text-white duration-300"
-                                    >
-                                        -
-                                    </button>
-                                    <input
-                                        type="number"
-                                        className="w-[50px] outline-none border-x border-black h-full px-1 bg-gray-200"
-                                        value={+quantity}
-                                        onChange={(e) =>
-                                            setQuantity(+e.target.value <= +detailProduct.quantity ? +e.target.value : +detailProduct.quantity)
-                                        }
-                                        max={+detailProduct?.quantity}
-                                    />
-                                    <button
-                                        className="px-2 py-1 text-center cursor-pointer hover:bg-gray-700 hover:text-white duration-300"
-                                        onClick={() => {
-                                            if (!detailProduct || quantity < detailProduct.quantity) {
-                                                setQuantity(+quantity + 1);
-                                            }
-                                        }}
-                                        disabled={!detailProduct || quantity >= detailProduct.quantity}
-                                    >
-                                        +
-                                    </button>
-                                </div>
+                            <div className="flex items-center gap-2 text-main font-semibold mt-3 underline text-[20px]">
+                                <span>Live Auction</span>
+                                <AuctionIcon />
                             </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleAddToCart}
-                                    className="w-full py-2 bg-main text-white text-[15px] font-medium rounded-sm hover:bg-black duration-300"
-                                >
-
-                                    ADD TO CART
-                                </button>
-                                <button
-                                    onClick={handleCheckout}
-                                    className="w-full py-2 bg-black text-white text-[15px] font-medium rounded-sm hover:bg-main duration-300"
-                                >
-                                    BUY NOW
-                                </button>
+                            <div className="p-5 border border-black flex flex-col gap-4">
+                                <div className="flex items-center gap-3">
+                                    <span className="font-semibold">Bid End Date : </span>
+                                    <span>{formatDate(detailProduct?.expire)}</span>
+                                </div>
+                                {remainingTime === 0 ?
+                                    <span className="text-main font-semibold">This auction has ended</span>
+                                    :
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <div className="flex flex-col justify-center items-center border border-black bg-gray-50 w-full h-full  py-3">
+                                            <span className="font-bold text-main">{formatRemainingTime().day}</span>
+                                            <span>Days</span>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center border border-black bg-gray-50 w-full h-full py-3">
+                                            <span className="font-bold text-main">{formatRemainingTime().hour}</span>
+                                            <span>Hours</span>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center border border-black bg-gray-50 w-full h-full py-3">
+                                            <span className="font-bold text-main">{formatRemainingTime().minute}</span>
+                                            <span>Minutes</span>
+                                        </div>
+                                        <div className="flex flex-col justify-center items-center border border-black bg-gray-50 w-full h-full py-3">
+                                            <span className="font-bold text-main">{formatRemainingTime().second}</span>
+                                            <span>Seconds</span>
+                                        </div>
+                                    </div>
+                                }
+                                <div className="flex flex-col gap-2 pt-5 border-t-[1px] border-t-black">
+                                    <span className="font-semibold text-[14px]">Reserved Price</span>
+                                    <span className="font-bold text-[24px]">{detailProduct?.reservePrice?.toLocaleString("vi-VN") +
+                                        " VND"}</span>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-1">
+                                        <span className="font-semibold text-[14px]">Step Price</span>
+                                        {/* <span className="text-[12px] w-[15px] h-[15px] flex items-center justify-center rounded-full border border-black font-bold cursor-pointer">
+                                            i
+                                        </span> */}
+                                    </div>
+                                    <span className="font-bold text-[24px]">{detailProduct?.stepPrice?.toLocaleString("vi-VN") +
+                                        " VND"}</span>
+                                </div>
+                                {detailProduct?.auctionHistory?.length > 0 &&
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-semibold text-[14px]">Highest Bid</span>
+                                            <span className="font-semibold text-[14px] underline cursor-pointer text-main"
+                                                onClick={() =>
+                                                    dispatch(setModel({ product: <BidderListModel auctionHistory={detailProduct.auctionHistory} currentId={user?._id} /> }))}>
+                                                {detailProduct?.auctionHistory.length} Bid(s)
+                                            </span>
+                                        </div>
+                                        <span className={`font-bold text-[24px]  
+                                        ${user?._id === detailProduct?.auctionHistory[0]?.bidedBy._id ? "text-green-500" : "text-main"}`}>
+                                            {detailProduct?.auctionHistory[0]?.price?.toLocaleString("vi-VN") +
+                                                " VND"} {user?._id === detailProduct?.auctionHistory[0]?.bidedBy._id && "(You)"}
+                                        </span>
+                                    </div>
+                                }
+                                {remainingTime !== 0 &&
+                                    <div>
+                                        <div className={`flex gap-3 pt-5 border-t-[1px] border-t-black justify-between ${width === 1 && "flex-col"}`}>
+                                            <div className="flex-auto">
+                                                <input type="number" placeholder={`${(detailProduct?.maxPrice + detailProduct?.stepPrice).toLocaleString("vi-VN")} VND`}
+                                                    value={bidPrice}
+                                                    onChange={(e) => setBidPrice(e.target.value)}
+                                                    className="p-1 border outline-none text-[17px] font-semibold w-full" />
+                                            </div>
+                                            <button onClick={handleBidProduct} className="px-3 py-2 flex-none outline-none bg-main text-white font-medium hover:bg-red-400">Place Live Bid</button>
+                                        </div>
+                                        <span className="text-[14px] font-light italic">Minimum bidding amount allowed
+                                            <span className="text-main ml-2">{detailProduct?.maxPrice + detailProduct?.stepPrice} </span>
+                                            VND
+                                        </span>
+                                    </div>}
                             </div>
                         </div>
                         <div className={`col-span-1 flex flex-col gap-3 w-full ${width < 3 && "px-5"}`}>
@@ -350,12 +398,11 @@ const DetailProduct = () => {
                             ))}
                         </div>
                     </div>
-                    <ProductInfo
+                    {/* <ProductInfo
                         product={detailProduct}
                         info={detailProduct?.info}
-                    />
-                    <Reviews product={detailProduct} />
-                    <RelatedProduct products={relatedProducts} />
+                    /> */}
+                    {/* <RelatedProduct products={relatedProducts} /> */}
                 </div>
             ) : (
                 <></>
@@ -364,4 +411,4 @@ const DetailProduct = () => {
     );
 };
 
-export default DetailProduct;
+export default memo(DetailAuctionProduct);

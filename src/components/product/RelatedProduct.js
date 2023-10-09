@@ -20,7 +20,7 @@ const RelatedProduct = ({ products }) => {
                 >
                     {products?.map((product) => (
                         <SwiperSlide key={product._id}>
-                            <ProductType2 product={product} fatherPath={`/collections/${product.category}/products/${product._id}`} swiperRef={swiperRef} />
+                            <ProductType2 product={product} fatherPath={`/collections/${product.category._id}/products/${product._id}`} swiperRef={swiperRef} />
                         </SwiperSlide>
                     ))}
                 </Swiper>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 import {
     CloseIcon,
     HeartIcon,
@@ -8,11 +8,11 @@ import {
     ShopIcon,
     ThreelineIcon,
     UserIcon,
-} from "../ultils/icons";
+} from "../../ultils/icons";
 import { Link, NavLink } from "react-router-dom";
-import path from "../ultils/paths";
+import path from "../../ultils/paths";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../app/user/userSlice";
+import { logout } from "../../app/user/userSlice";
 import { offModel, setModel } from "app/ProductModel";
 import RightCart from "./RightCart";
 import { navItems } from "ultils/constaint";
@@ -105,18 +105,21 @@ const Header = () => {
                 {/* <div className="flex justify-center items-center pr-4 pt-1 border-r-[1px] border-r-[rgba(0,0,0,0.1)]">
                     <HeartIcon className="text-main " size={30} />
                 </div> */}
-                <div className="flex gap-2 justify-center items-center  border-r-[1px] pr-4 cursor-pointer"
+                <div className="flex gap-2 justify-center items-center  border-r-[1px] pr-4 cursor-pointer relative"
                     onClick={() => dispatch(setModel({ product: <RightCart /> }))
                     }>
                     <ShopIcon className="text-main " size={30} />
-                    {width !== 1 && <div
+                    {width !== 1 ? <div
 
                         className="flex items-center justify-center gap-1  hover:text-main "
                     >
                         <span>{totalItems || 0}</span>
                         <span className="flex items-center">{`${totalItems > 1 ? "items" : "item"
                             }`}</span>
-                    </div>}
+                    </div> :
+                        <div className="flex items-center justify-center absolute bottom-0 right-1 text-black w-[20px] h-[20px] rounded-full bg-white border shadow-lg">
+                            {totalItems||0}
+                        </div>}
                 </div>
                 {isLoggedIn && currentUser ? (
                     <div ref={buttonRef} className="relative inline-block">
@@ -136,7 +139,7 @@ const Header = () => {
                                             to={
                                                 `/${currentUser.role === 4
                                                     ? `${path.MEMBER}/${path.PERSONAL}`
-                                                : `${path.ADMIN}/${path.DASHBOARD}`}`
+                                                    : `${path.ADMIN}/${path.DASHBOARD}`}`
                                             }
                                             className="w-full h-full flex justify-center  px-4  py-2 "
                                         >

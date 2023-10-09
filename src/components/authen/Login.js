@@ -5,19 +5,33 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import path from "ultils/paths";
 import { login } from "app/user/userSlice";
 import { useDispatch } from "react-redux";
-import { PrevArrowIcon } from "ultils/icons";
+import { HidePasswordIcon, PrevArrowIcon, ShowPasswordIcon } from "ultils/icons";
 import validator from "validator";
 import { setLoading } from "app/appSlice";
+import { useEffect } from "react";
+import { decryptPassword, encrypt } from "ultils/helpers";
 const Login = ({ isLogin, setIsLogin }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isShowPassword, setIsShowPassword] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [forgotEmail, setForgotEmail] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [forgotEmailError, setForgotEmailError] = useState("");
+    const [isRemember, setIsRemember] = useState(false);
+    useEffect(() => {
+        const loginInfo = JSON.parse(localStorage?.getItem("loginInfo"));
+        if (loginInfo) {
+            const isExistAccount = loginInfo?.findIndex(item => item?.email === email);
+            if (isExistAccount !== -1) {
+                setIsRemember(true);
+                setPassword(decryptPassword(loginInfo[isExistAccount]?.password));
+            }
+        }
+    }, [email])
     const handleLogin = async () => {
         setEmailError("");
         setPasswordError("");
@@ -41,6 +55,31 @@ const Login = ({ isLogin, setIsLogin }) => {
             const response = await apiLogin({ email, password });
             dispatch(setLoading(false));
             if (response.success) {
+                if (isRemember) {
+                    const encodedPassword = encrypt(password);
+                    const loginInfo = {
+                        email,
+                        password: encodedPassword,
+                        isRemember: isRemember,
+                    }
+                    const existAccount = JSON.parse(localStorage?.getItem("loginInfo"));
+                    if (existAccount) {
+                        const exist = existAccount?.find(item => item.email === loginInfo.email);
+                        if (!exist) {
+                            localStorage.setItem("loginInfo", JSON.stringify([...existAccount, loginInfo]));
+                        }
+                    }
+                    else localStorage.setItem("loginInfo", JSON.stringify([loginInfo]));
+                } else {
+                    const existingAccountsJSON = localStorage.getItem("loginInfo");
+                    let existingAccounts = existingAccountsJSON ? JSON.parse(existingAccountsJSON) : [];
+                    const accountIndexToRemove = existingAccounts.findIndex(item => item.email === email);
+
+                    if (accountIndexToRemove !== -1) {
+                        existingAccounts.splice(accountIndexToRemove, 1);
+                        localStorage.setItem("loginInfo", JSON.stringify(existingAccounts));
+                    }
+                }
                 Swal.fire(
                     response.success ? "Login Success" : "Login Failed",
                     response.message,
@@ -129,18 +168,32 @@ const Login = ({ isLogin, setIsLogin }) => {
                     >
                         Password
                     </label>
-                    <input
-                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${passwordError && "border-red-500"
-                            }`}
-                        id="password"
-                        type="password"
-                        placeholder="Enter your Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleLogin();
-                        }}
-                    />
+                    <div className="shadow appearance-none border rounded flex items-center pr-3">
+                        <input
+                            className={` w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${passwordError && "border-red-500"
+                                }`}
+                            id="password"
+                            type={isShowPassword ? "text" : "password"}
+                            placeholder="Enter your Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") handleLogin();
+                            }}
+                        />
+                        {!isShowPassword ? (
+                            <ShowPasswordIcon
+                                className="cursor-pointer"
+                                onClick={() => setIsShowPassword(true)}
+                            />
+                        ) : (
+                            <HidePasswordIcon
+                                className="cursor-pointer"
+                                onClick={() => setIsShowPassword(false)}
+                            />
+                        )}
+                    </div>
+
                     {passwordError && (
                         <p className="text-red-500 text-xs italic">
                             {passwordError}
@@ -155,6 +208,22 @@ const Login = ({ isLogin, setIsLogin }) => {
                     >
                         Sign In
                     </button>
+                    <div className="flex items-center gap-2">
+                        <input type="checkbox" id="rememberPassword" checked={isRemember} onChange={(e) => setIsRemember(e.target.checked)} className="w-[18px] h-[18px] border-[1px] cursor-pointer border-black" />
+                        <label className="cursor-pointer text-[14px] text-span italic font-medium" htmlFor="rememberPassword">Remember password</label>
+                    </div>
+
+
+                </div>
+
+                <div className="flex items-center justify-between mt-5">
+                    <p
+                        className="inline-block cursor-pointer align-baseline font-bold text-sm underline hover:text-blue-800 "
+                        onClick={() => setIsLogin(2)}
+                    >
+                        Haven't got account yet? Sign up
+                    </p>
+
                     <p
                         onClick={() => setShowForgotPassword(true)}
                         className="cursor-pointer inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
@@ -162,12 +231,6 @@ const Login = ({ isLogin, setIsLogin }) => {
                         Forgot Password?
                     </p>
                 </div>
-                <p
-                    className="inline-block cursor-pointer align-baseline font-bold text-sm underline hover:text-blue-800 mt-5"
-                    onClick={() => setIsLogin(2)}
-                >
-                    Haven't got account yet? Sign up
-                </p>
             </div>
 
             <div

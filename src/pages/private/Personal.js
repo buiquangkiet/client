@@ -44,6 +44,7 @@ const Personal = () => {
   const handleAttribute = useCallback((field, value) => {
     setCurrentUser({ ...currentUser, [field]: value })
   }, [currentUser])
+
   const handleSubmit = async () => {
     if (!validateEmail(currentUser.email)) return Swal.fire("Error", "Invalid Email", "error");
     if (!validatePhone(currentUser.mobile)) return Swal.fire("Error", "Invalid Mobile", "error");
@@ -60,6 +61,7 @@ const Personal = () => {
         lastname: 0,
         email: 0,
         mobile: "",
+        address:"",
         avatar: FileList,
       }
       Object.keys(updateAttributes).forEach(key => {
@@ -73,7 +75,7 @@ const Personal = () => {
       const res = await apiUpdateUser(formData);
       if (res.success) {
         Swal.fire("Success", "Updated", "success").then(() => {
-          setCurrentUser(res.updateUser)
+          setCurrentUser(res.updateUser);
           dispatch(updateCurrentUser(res.updateUser))
         })
       }
@@ -84,7 +86,7 @@ const Personal = () => {
     }
   }
   return (
-    <div className='p-8 flex flex-col gap-3'>
+    <div className='p-8 flex flex-col gap-3 w-full'>
       <div className={`flex items-center ${width === 1 ? "flex-col" : " gap-[100px]"}`}>
         <div
           onClick={() => document.getElementById("input-file").click()}
@@ -124,6 +126,7 @@ const Personal = () => {
           field="email"
           value={currentUser?.email}
           required={true}
+          disabled={true}
         />
         <Input
           label="Mobile Phone"
@@ -132,8 +135,14 @@ const Personal = () => {
           value={currentUser?.mobile}
           required={true}
         />
-
       </div>
+      <Input
+          label="Address"
+          handleAttribute={handleAttribute}
+          field="address"
+          value={currentUser?.address}
+          required={true}
+        />
       <div className='flex items-center gap-2'>
         <span className='font-semibold'>Account Status : </span>
         <span>{currentUser?.isBlocked ? "Blocked" : "Active"}</span>

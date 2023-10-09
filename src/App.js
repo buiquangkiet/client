@@ -27,14 +27,22 @@ import {
     ManageUsers,
 } from "pages/admin";
 import { MemberLayout, Personal } from "pages/private";
-import Loading from "components/Loading";
+import Loading from "components/common/Loading";
 import { useDispatch, useSelector } from "react-redux";
-import Model from "components/Model";
+import Model from "components/common/Model";
 import EditProduct from "pages/admin/EditProduct";
 import Purchases from "pages/private/Purchases";
 import { getCurrent } from "app/user/asyncAction";
 import { setWidth } from "app/appSlice";
 import { offModel } from "app/ProductModel";
+import AuctionProducts from "pages/public/AuctionProducts";
+import DetailAuctionProduct from "pages/public/DetailAuctionProduct";
+import MyAuctions from "pages/private/MyAuctions";
+import Checkout from "pages/public/Checkout";
+import SearchOrder from "pages/public/SearchOrder";
+import CreateAuctionProduct from "pages/admin/CreateAuctionProduct";
+import ManageAuctionProducts from "pages/admin/ManageAuctionProducts";
+import EditAuctionProduct from "pages/admin/EditAuctionProduct";
 
 function App() {
     const { isLoading } = useSelector(state => state.app);
@@ -101,6 +109,14 @@ function App() {
                         element={<CreateProduct />}
                     />
                     <Route
+                        path={path.CREATE_AUCTION_PRODUCT}
+                        element={<CreateAuctionProduct />}
+                    />
+                    <Route
+                        path={path.MANAGE_AUCTION_PRODUCTS}
+                        element={<ManageAuctionProducts />}
+                    />
+                    <Route
                         path={path.MANAGE_ORDERS}
                         element={<ManageOrders />}
                     />
@@ -110,13 +126,17 @@ function App() {
                     />
                     <Route path={path.MANAGE_USERS} element={<ManageUsers />} />
                     <Route path={path.EDIT_PRODUCT} element={<EditProduct />} />
+                    <Route path={path.EDIT_AUCTION_PRODUCT} element={<EditAuctionProduct />} />
                 </Route>
                 <Route path={path.MEMBER} element={<MemberLayout />}>
                     <Route path={path.PERSONAL} element={<Personal />} />
                     <Route path={path.MY_PURCHASES} element={<Purchases />} />
+                    <Route path={path.MY_AUCTION} element={< MyAuctions />} />
                 </Route>
                 <Route path={path.PUBLIC} element={<Public />}>
                     <Route path={path.ALL} element={<Home />} />
+                    <Route path={path.CHECK_OUT} element={<Checkout />} />
+                    <Route path={path.SEARCH_ORDER} element={<SearchOrder />} />
                     <Route path={path.HOME} element={<Home />} />
                     <Route path={path.BLOGS} element={<Blog />} />
                     <Route path={path.CART} element={<Cart />} />
@@ -141,6 +161,10 @@ function App() {
                                 element={<FilterCollection />}
                             />
                         </Route>
+                    </Route>
+                    <Route path={path.AUCTION_PRODUCTS} element={<AuctionProducts />}> </Route>
+                    <Route path={path.DETAIL_AUCTION_PRODUCT} element={<DetailAuctionProduct />}>
+
                     </Route>
                 </Route>
             </Routes>

@@ -51,7 +51,8 @@ module.exports = {
                 rotation: {
                     "0%": { transform: "rotate(0deg)" },
                     "100%": { transform: "rotate(360deg)" },
-                }
+                },
+                
             },
             animation: {
                 showMenu: "showMenu 0.5s ease-in-out",

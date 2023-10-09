@@ -38,7 +38,7 @@ import { FaFacebookF, FaGift, FaShieldAlt } from "react-icons/fa";
 import { BiHide, BiShow } from "react-icons/bi";
 import { MdLocalShipping, MdOutlineCreateNewFolder } from "react-icons/md";
 import { GiReturnArrow, GiRotaryPhone } from "react-icons/gi";
-import { RiProductHuntLine } from "react-icons/ri";
+import { RiAuctionLine, RiProductHuntLine } from "react-icons/ri";
 import { GoTriangleDown, GoTriangleUp } from 'react-icons/go';
 import { IoIosLogOut } from 'react-icons/io';
 import { RxDashboard } from 'react-icons/rx'
@@ -95,3 +95,4 @@ export const RadioButtonIcon = () => {
         <GoTriangleDown />
     </div>)
 }
+export const AuctionIcon = RiAuctionLine

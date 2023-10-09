@@ -30,7 +30,7 @@ const AdminLayout = () => {
                 <div className="flex flex-col">
                     <Header />
                     <div className="  w-full  relative">
-                        <div className="w-[240px] h-full absolute top-0 left-0 bg-gray-200">
+                        <div className="w-[240px] h-full absolute top-0 left-0 border-r-[1px]">
                             <AdminSidebar />
                         </div>
                         <div className="min-h-screen ml-[250px] ">

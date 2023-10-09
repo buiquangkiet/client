@@ -3,7 +3,7 @@ import { offModel } from "app/ProductModel";
 import { updateCurrentUser } from "app/user/userSlice";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { CloseIcon, DeleteIcon } from "ultils/icons";
 import path from "ultils/paths";
@@ -13,6 +13,7 @@ const RightCart = () => {
     const { width } = useSelector((state) => state.app);
     const { currentUser } = useSelector((state) => state.user);
     const [cart, setCart] = useState(currentUser?.cart);
+    const navigate = useNavigate()
     const dispatch = useDispatch();
     useEffect(() => {
         setCart(currentUser?.cart);
@@ -58,6 +59,21 @@ const RightCart = () => {
         });
         setTotalBill(total);
     };
+    const handleCheckout = () => {
+        const checkoutProducts = cart.map(item => ({
+            pid: item.product._id,
+            title: item.product.title,
+            quantity: +item.quantity,
+            variants: item.variants,
+            thumbnail: item.product.thumbnail,
+            price: item.product.price
+        }))
+        navigate("/checkout", {
+            state: {
+                products: checkoutProducts
+            }
+        })
+    }
     return (
         <div className={`fixed flex flex-col h-screen right-0 z-40 bg-[#1c1d1d] animate-slideLeftToRight p-5 text-white ${width === 1 ? "w-[350px] max-w-full" : " w-[400px]"}`}>
             {cart ? (
@@ -169,7 +185,8 @@ const RightCart = () => {
                                 SHOPPING CART
                             </button>
                         </Link>
-                        <button className="text-white flex items-center bg-main w-full py-1 justify-center">
+                        <button className="text-white flex items-center bg-main w-full py-1 justify-center"
+                            onClick={handleCheckout}>
                             <span> CHECKOUT</span>
                         </button>
                     </div>

@@ -37,14 +37,15 @@ const Reviews = ({ product }) => {
     // console.log(currentUser);
     return (
         <div className="flex flex-col gap-5 p-3">
-            <div className={`flex items-center justify-between h-full border-b-[1px] ${width <3 &&"flex-col"}`}>
+            <span className="text-[20px] font-semibold">REVIEWS</span>
+            <div className={`flex items-center justify-between h-full border-b-[1px] ${width < 3 && "flex-col"}`}>
                 <div className={`  ${width < 3 ? "w-full" : "w-[30%] border-r-[1px]"}`}>
                     <LeftReview
                         total={product?.totalRating}
                         quantityRate={product?.rating?.length}
                     />
                 </div>
-                <div className={` h-full ${width <3 ? "w-full" : "w-[70%]"}`}>
+                <div className={` h-full ${width < 3 ? "w-full" : "w-[70%]"}`}>
                     <RightReview rating={product?.rating} />
                 </div>
             </div>
@@ -58,9 +59,10 @@ const Reviews = ({ product }) => {
                 </button>
             </div>
             <div className="flex flex-col gap-3">
-                <span className="text-[20px] font-semibold">
-                    CUSTOMER REVIEWS
-                </span>
+                {product?.rating?.length > 0 &&
+                    <span className="text-[20px] font-semibold">
+                        CUSTOMER REVIEWS
+                    </span>}
                 <div className="flex flex-col gap-2">
                     {product?.rating?.map((item, index) => (
                         <div key={index} className="flex gap-1">

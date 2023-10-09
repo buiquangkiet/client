@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 const ProductCard = (props) => {
     const product = props.product;
-
     return (
         <Link
             to={`/collections/${product?.category?._id}/products/${product?._id}`}

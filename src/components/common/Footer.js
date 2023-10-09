@@ -7,7 +7,7 @@ import {
     PhoneIcon,
     PinterestIcon,
     TwitterIcon,
-} from "../ultils/icons";
+} from "../../ultils/icons";
 import { useSelector } from "react-redux";
 
 const Footer = () => {
