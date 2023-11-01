@@ -102,7 +102,7 @@ const OrderItem = ({ item, admin }) => {
                                     <CheckIcon onClick={() => handleUpdateStatus()} className='text-green-500 cursor-pointer' />
                                     <CloseIcon className='text-red-500 cursor-pointer' onClick={() => setIsShowEdit(false)} />
                                     <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                                        {allStatus.map((status, index) => (
+                                        {allStatus?.map((status, index) => (
                                             <option key={index} value={status}>
                                                 {status}
                                             </option>
@@ -122,7 +122,7 @@ const OrderItem = ({ item, admin }) => {
                         </div>
                     </div>
                     <div className='flex flex-col gap-4 border-b-[1px]  py-5 '>
-                        {item.products.map(product =>
+                        {item?.products?.map(product =>
                             <div className='flex items-center gap-5 w-full' key={product.product._id}>
                                 <div className='relative'>
                                     <img src={product.product.thumbnail.path ? product.product.thumbnail.path : product.product.thumbnail} className='w-[70px] h-[70px]' alt="" />
@@ -138,13 +138,13 @@ const OrderItem = ({ item, admin }) => {
                                             </span>)}
                                     </span>
                                 </div>
-                                <span className="text-main italic font-medium">{(+product?.product.price * +product?.quantity).toLocaleString("vi-VN")} VND</span>
+                                <span className="text-main italic font-medium">{(+product?.product.price * +product?.quantity)?.toLocaleString("vi-VN")} VND</span>
                             </div>
                         )}
                     </div>
                     <div className="flex justify-end gap-3 items-center pt-3">
                         <span className="text-span">Order Total :</span>
-                        <span className="text-[20px] font-semibold text-main">{item.total.toLocaleString("vi-VN")} VND</span>
+                        <span className="text-[20px] font-semibold text-main">{item?.total?.toLocaleString("vi-VN")} VND</span>
                     </div>
                     {(item.status === "Processing" || item.status === "Shipping") &&
                         <div className="flex items-center justify-between mt-3">
