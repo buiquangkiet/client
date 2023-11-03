@@ -42,7 +42,6 @@ const CreateAuctionProduct = () => {
     setProduct({ ...product, [field]: value })
   }, [product])
 
-
   const handleSubmit = async () => {
     if (!product.title || !product.reservePrice || !product.stepPrice
       || !product.category || !product.brand || product.image.length === 0 || product.thumb.length === 0)
@@ -66,34 +65,36 @@ const CreateAuctionProduct = () => {
         Swal.fire({
           icon: 'error',
           title: 'Oops...',
-          text: 'Expired',
-        })
-      }
-      else formData.append("expire", timeRemaining);
-      dispatch(setLoading(true))
-      const res = await apiCreateAuctionProduct(formData);
-      if (res.success) {
-        Swal.fire("Success", "Created Product", "success").then(() =>
-          setProduct({
-            title: "",
-            reservePrice: 0,
-            stepPrice: 0,
-            expire: 0,
-            category: '',
-            brand: '',
-            description: '',
-            thumb: FileList,
-            image: FileList,
-          }))
-        setPreviewImage({
-          thumb: '',
-          image: []
+          text: 'Expire is invalid',
         })
       }
       else {
-        Swal.fire("Error", "Something went wrong", "error")
+        formData.append("expire", timeRemaining);
+        dispatch(setLoading(true))
+        const res = await apiCreateAuctionProduct(formData);
+        if (res.success) {
+          Swal.fire("Success", "Created Product", "success").then(() =>
+            setProduct({
+              title: "",
+              reservePrice: 0,
+              stepPrice: 0,
+              expire: 0,
+              category: '',
+              brand: '',
+              description: '',
+              thumb: FileList,
+              image: FileList,
+            }))
+          setPreviewImage({
+            thumb: '',
+            image: []
+          })
+        }
+        else {
+          Swal.fire("Error", "Something went wrong", "error")
+        }
+        dispatch(setLoading(false))
       }
-      dispatch(setLoading(false))
     }
   }
   return (

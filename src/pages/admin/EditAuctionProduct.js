@@ -1,10 +1,8 @@
 import { apiGetCategory } from 'apis/app';
 import { apiGetDetailAuctionProduct, apiUpdateAuctionProduct } from 'apis/auctionProduct';
-import { apiGetDetailProduct, apiUpdateProduct } from 'apis/product';
 import { setLoading } from 'app/appSlice';
 import Input from 'components/admin/Input';
 import MarkdownEditor from 'components/admin/MarkdownEditor';
-import Filter from 'components/collection/Filter';
 import React from 'react'
 import { useState } from 'react';
 import { useCallback } from 'react';
@@ -15,7 +13,6 @@ import Swal from 'sweetalert2';
 import { getBase64 } from 'ultils/helpers';
 
 const EditAuctionProduct = () => {
-    const navigate = useNavigate()
     const location = useLocation();
     const dispatch = useDispatch();
     const pid = location.pathname.split('/')[location.pathname.split('/').length - 1]
@@ -63,8 +60,8 @@ const EditAuctionProduct = () => {
         setBrand(brandTemp?.brand)
 
     }, [category, product.category])
-
     const handleSubmit = async () => {
+        product.category = product.category.title;
         if (!product.title || !product.reservePrice || !product.stepPrice
             || !product.category || !product.brand || product.image.length === 0 || product.thumbnail.length === 0)
             Swal.fire({
@@ -74,11 +71,13 @@ const EditAuctionProduct = () => {
             })
         else {
             const formData = new FormData();
-            // product.image.append()
             Object.keys(product).forEach(key => {
-                key !== 'image' && key !== 'expire' && formData.append(key, product[key])
+                key !== 'image' && key !== 'expire' && key !== 'auctionHistory' && formData.append(key, product[key])
             })
             for (let image of product.image) formData.append('image', image)
+            if (product?.auctionHistory.length !== 0) {
+                formData.append('auctionHistory', product.auctionHistory)
+            }
 
             // if (product.expire)
             const timeRemaining = Math.round((new Date(product.expire) - Date.now()) / 1000)
@@ -114,10 +113,12 @@ const EditAuctionProduct = () => {
                 else {
                     Swal.fire("Error", "Something went wrong", "error")
                 }
+
                 dispatch(setLoading(false))
             }
         }
     }
+
     return (
         <div className="container mx-auto p-4 text-left ">
             <div className="font-semibold text-[20px] my-5 mb-8">
